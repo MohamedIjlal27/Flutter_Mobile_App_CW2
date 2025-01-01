@@ -5,11 +5,6 @@ import 'package:e_travel/screens/details_screen.dart';
 import 'package:e_travel/widgets/custom_drawer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:e_travel/constants/locations.dart';
-import 'package:e_travel/models/location_model.dart';
-import 'package:e_travel/screens/details_screen.dart';
-import 'package:e_travel/widgets/custom_drawer.dart';
-import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -27,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _fetchUserProfile();
-        _filteredLocations = locations; // Initialize with all locations
+    _filteredLocations = locations; // Initialize with all locations
 
     // ... other initialization
   }
@@ -35,19 +30,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchUserProfile() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      DocumentSnapshot userDoc = await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .get();
+      DocumentSnapshot userDoc =
+          await _firestore.collection('users').doc(user.uid).get();
       setState(() {
-        _profileImageUrl = userDoc['profileImage']; // Assuming 'profileImage' is the key in your Firestore document
+        _profileImageUrl = userDoc[
+            'profileImage']; // Assuming 'profileImage' is the key in your Firestore document
       });
     }
   }
+
   String _searchTerm = '';
   String? _selectedCategory; // Added variable for selected category
   List<Location> _filteredLocations = [];
-
 
   void _onSearchChanged(String searchTerm) {
     setState(() {
@@ -154,18 +148,18 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ),
-         actions: [
-  Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: CircleAvatar(
-      radius: 25,
-      backgroundImage: _profileImageUrl != null
-          ? NetworkImage(_profileImageUrl!) // Use the fetched URL
-          : const NetworkImage(
-              'https://img.freepik.com/free-photo/young-male-posing-isolated-against-blank-studio-wall_273609-12356.jpg'), // Default image if URL is not available
-    ),
-  ),
-],
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircleAvatar(
+                radius: 25,
+                backgroundImage: _profileImageUrl != null
+                    ? NetworkImage(_profileImageUrl!) // Use the fetched URL
+                    : const NetworkImage(
+                        'https://img.freepik.com/free-photo/young-male-posing-isolated-against-blank-studio-wall_273609-12356.jpg'), // Default image if URL is not available
+              ),
+            ),
+          ],
         ),
       ),
       body: ListView(

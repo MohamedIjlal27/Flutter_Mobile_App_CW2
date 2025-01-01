@@ -6,7 +6,6 @@ import 'package:e_travel/widgets/custom_details_screen_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -216,33 +215,37 @@ class _DetailScreenState extends State<DetailScreen> {
                   const SizedBox(height: 16),
 
                   // Make Booking Button
-                Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    CustomButton(
-      title: 'View On Map',
-      backgroundColor: Colors.greenAccent, // Button color for "View On Map"
-      textColor: Colors.black, // Text color for "View On Map"
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MapScreen(location: widget.location)),
-        );
-        print('View On Map');
-      },
-    ),
-    const SizedBox(width: 20),
-    CustomButton(
-      title: 'Book Now',
-      backgroundColor: Colors.orangeAccent, // Button color for "Book Now"
-      textColor: Colors.white, // Text color for "Book Now"
-      onPressed: () {
-        _showBookingBottomSheet();
-        print('Booking confirmed!');
-      },
-    ),
-  ],
-)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomButton(
+                        title: 'View On Map',
+                        backgroundColor: Colors
+                            .greenAccent, // Button color for "View On Map"
+                        textColor: Colors.black, // Text color for "View On Map"
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    MapScreen(location: widget.location)),
+                          );
+                          print('View On Map');
+                        },
+                      ),
+                      const SizedBox(width: 20),
+                      CustomButton(
+                        title: 'Book Now',
+                        backgroundColor:
+                            Colors.orangeAccent, // Button color for "Book Now"
+                        textColor: Colors.white, // Text color for "Book Now"
+                        onPressed: () {
+                          _showBookingBottomSheet();
+                          print('Booking confirmed!');
+                        },
+                      ),
+                    ],
+                  )
                 ],
               ),
             ),
@@ -251,8 +254,6 @@ class _DetailScreenState extends State<DetailScreen> {
       ),
     );
   }
-
- 
 
   void _showBookingBottomSheet() {
     showModalBottomSheet(

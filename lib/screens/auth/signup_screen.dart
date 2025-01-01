@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_travel/constants/app_constants.dart';
 import 'package:e_travel/constants/custom_fonts.dart';
 import 'package:e_travel/screens/home_screen.dart';
+import 'package:e_travel/utils/theme_colors.dart';
 import 'package:e_travel/widgets/custom_buttons.dart';
 import 'package:e_travel/widgets/custom_textform_feild.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -95,8 +96,11 @@ class _SignUpScreenState extends State<SignUpScreen>
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red.shade400,
+        content: Text(
+          message,
+          style: TextStyle(color: ThemeColors.lightText),
+        ),
+        backgroundColor: ThemeColors.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(10),
@@ -109,14 +113,7 @@ class _SignUpScreenState extends State<SignUpScreen>
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.blue.shade700,
-              Colors.purple.shade700,
-            ],
-          ),
+          gradient: ThemeColors.primaryGradient,
         ),
         child: SafeArea(
           child: FadeTransition(
@@ -128,17 +125,16 @@ class _SignUpScreenState extends State<SignUpScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 30),
                     Hero(
                       tag: 'appLogo',
                       child: Container(
                         padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.9),
+                          color: ThemeColors.overlayLight,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: ThemeColors.shadowColor,
                               blurRadius: 15,
                               offset: const Offset(0, 5),
                             ),
@@ -147,25 +143,25 @@ class _SignUpScreenState extends State<SignUpScreen>
                         child: applogo,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     Text(
                       appname,
                       style: CustomFonts.titleFont(
                         fontSize: 32,
-                        color: Colors.white,
+                        color: ThemeColors.lightText,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.all(25),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.95),
+                        color: ThemeColors.overlayLight,
                         borderRadius: BorderRadius.circular(25),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: ThemeColors.shadowColor,
                             blurRadius: 15,
                             offset: const Offset(0, 5),
                           ),
@@ -181,11 +177,11 @@ class _SignUpScreenState extends State<SignUpScreen>
                               style: GoogleFonts.poppins(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade700,
+                                color: ThemeColors.primaryColor,
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 25),
+                            const SizedBox(height: 10),
                             CustomTextFormField(
                               controller: _nameController,
                               label: 'Name',
@@ -198,7 +194,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 20),
                             CustomTextFormField(
                               controller: _emailController,
                               label: 'Email',
@@ -214,7 +209,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 20),
                             CustomTextFormField(
                               controller: _passwordController,
                               label: 'Password',
@@ -232,7 +226,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 20),
                             CustomTextFormField(
                               controller: _confirmPasswordController,
                               label: 'Confirm Password',
@@ -252,8 +245,10 @@ class _SignUpScreenState extends State<SignUpScreen>
                             ),
                             const SizedBox(height: 30),
                             _isLoading
-                                ? const Center(
-                                    child: CircularProgressIndicator(),
+                                ? Center(
+                                    child: CircularProgressIndicator(
+                                      color: ThemeColors.primaryColor,
+                                    ),
                                   )
                                 : CustomButton(
                                     text: 'Sign Up',
@@ -276,7 +271,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                           'Already have an account? ',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            color: Colors.white,
+                            color: ThemeColors.lightText,
                           ),
                         ),
                         TextButton(
@@ -289,14 +284,13 @@ class _SignUpScreenState extends State<SignUpScreen>
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: ThemeColors.lightText,
                               decoration: TextDecoration.underline,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 30),
                   ],
                 ),
               ),

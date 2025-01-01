@@ -1,39 +1,54 @@
-import 'package:e_travel/utils/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:e_travel/utils/theme_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
-  final Color color;
+  final bool isOutlined;
+  final double? width;
+  final double height;
   final double borderRadius;
-  final TextStyle? textStyle;
-  final EdgeInsetsGeometry padding;
 
   const CustomButton({
     Key? key,
     required this.text,
     required this.onPressed,
-    this.color = AppColors.primaryColor,
-    this.borderRadius = 8.0,
-    this.textStyle,
-    this.padding = const EdgeInsets.symmetric(vertical: 12.0, horizontal: 90.0),
+    this.isOutlined = false,
+    this.width,
+    this.height = 50,
+    this.borderRadius = 25,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
+    return SizedBox(
+      width: width ?? double.infinity,
+      height: height,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor:
+              isOutlined ? Colors.transparent : ThemeColors.buttonPrimary,
+          foregroundColor:
+              isOutlined ? ThemeColors.buttonPrimary : ThemeColors.buttonText,
+          elevation: isOutlined ? 0 : 2,
+          shadowColor: ThemeColors.shadowColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            side: BorderSide(
+              color: ThemeColors.buttonPrimary,
+              width: isOutlined ? 2 : 0,
+            ),
+          ),
         ),
-        padding: padding,
-      ),
-      onPressed: onPressed,
-      child: Text(
-        text,
-        style: textStyle ?? 
-            const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+        child: Text(
+          text,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

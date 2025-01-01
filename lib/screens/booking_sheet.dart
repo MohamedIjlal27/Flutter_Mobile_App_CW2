@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_travel/models/location_model.dart';
-import 'package:e_travel/utils/colors.dart';
+import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class BookingBottomSheet extends StatefulWidget {
   final Location location;
 
-  const BookingBottomSheet({Key? key, required this.location}) : super(key: key);
+  const BookingBottomSheet({Key? key, required this.location})
+      : super(key: key);
 
   @override
   _BookingBottomSheetState createState() => _BookingBottomSheetState();
@@ -165,19 +166,24 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
         hintStyle: const TextStyle(color: Colors.grey), // Hint text style
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12), // Rounded corners
-          borderSide: BorderSide(color: Colors.blueAccent, width: 1.5), // Border style
+          borderSide:
+              BorderSide(color: Colors.blueAccent, width: 1.5), // Border style
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.blueAccent, width: 2), // Focused border color
+          borderSide: BorderSide(
+              color: Colors.blueAccent, width: 2), // Focused border color
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.blueAccent.withOpacity(0.5), width: 1.5), // Enabled border color
+          borderSide: BorderSide(
+              color: Colors.blueAccent.withOpacity(0.5),
+              width: 1.5), // Enabled border color
         ),
         filled: true,
         fillColor: Colors.white, // Background color
-        contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20), // Padding inside the field
+        contentPadding: const EdgeInsets.symmetric(
+            vertical: 15, horizontal: 20), // Padding inside the field
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -204,7 +210,8 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12), // Rounded corners
         ),
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 30), // Increased padding
+        padding: const EdgeInsets.symmetric(
+            vertical: 18, horizontal: 30), // Increased padding
         textStyle: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
@@ -223,25 +230,27 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
   Future<void> _saveBooking(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      print('User is logged in, proceeding with booking...');  // Debugging line
+      print('User is logged in, proceeding with booking...'); // Debugging line
       final bookingData = {
         'location': widget.location.name,
         'date': _selectedDate.toIso8601String(),
         'time': _selectedTime.format(context),
         'people': _peopleController.text,
         'userId': user.uid,
-        'status': 'pending', 
+        'status': 'pending',
       };
 
       try {
-        await FirebaseFirestore.instance.collection('bookings').add(bookingData);
-        print('Booking saved to Firestore');  // Debugging line
+        await FirebaseFirestore.instance
+            .collection('bookings')
+            .add(bookingData);
+        print('Booking saved to Firestore'); // Debugging line
         _showConfirmationDialog(context);
       } catch (e) {
-        print('Error saving booking: $e');  // Debugging line
+        print('Error saving booking: $e'); // Debugging line
       }
     } else {
-      print('User is not logged in');  // Debugging line
+      print('User is not logged in'); // Debugging line
     }
   }
 
@@ -256,7 +265,8 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
           ),
           title: Row(
             children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 30), // Success icon
+              Icon(Icons.check_circle,
+                  color: Colors.green, size: 30), // Success icon
               const SizedBox(width: 10),
               const Text(
                 'Booking Confirmed',
@@ -282,7 +292,8 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                 Navigator.of(context).pop(); // Close the dialog
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.green,
                   borderRadius: BorderRadius.circular(10),

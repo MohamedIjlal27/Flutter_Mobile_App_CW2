@@ -1,7 +1,7 @@
 import 'package:e_travel/screens/booking_sheet.dart';
 import 'package:e_travel/screens/map_screen.dart';
 import 'package:e_travel/models/location_model.dart';
-import 'package:e_travel/utils/colors.dart';
+import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:e_travel/widgets/custom_details_screen_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

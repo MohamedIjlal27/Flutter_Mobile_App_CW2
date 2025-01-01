@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:e_travel/utils/colors.dart';
+import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:flutter/material.dart';
 
 class EditBookingScreen extends StatefulWidget {
@@ -24,16 +24,21 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
   }
 
   Future<void> _loadBookingDetails() async {
-    final bookingSnapshot = await _firestore.collection('bookings').doc(widget.bookingId).get();
+    final bookingSnapshot =
+        await _firestore.collection('bookings').doc(widget.bookingId).get();
     if (bookingSnapshot.exists) {
       final data = bookingSnapshot.data()!;
-      _peopleController.text = data['people'] ?? '0'; // Default value is '0' if null
-      _selectedDate = DateTime.tryParse(data['date']) ?? DateTime.now(); // Default to now if null
+      _peopleController.text =
+          data['people'] ?? '0'; // Default value is '0' if null
+      _selectedDate = DateTime.tryParse(data['date']) ??
+          DateTime.now(); // Default to now if null
       // Assuming 'time' is stored as a string in the format 'HH:mm'
       final timeString = data['time'] ?? '12:00';
       final parts = timeString.split(':');
       if (parts.length == 2) {
-        _selectedTime = TimeOfDay(hour: int.tryParse(parts[0]) ?? 12, minute: int.tryParse(parts[1]) ?? 0);
+        _selectedTime = TimeOfDay(
+            hour: int.tryParse(parts[0]) ?? 12,
+            minute: int.tryParse(parts[1]) ?? 0);
       }
     }
   }
@@ -46,7 +51,8 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
     });
 
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking updated successfully.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking updated successfully.')));
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -80,8 +86,9 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(centerTitle: true,
-      elevation: 5,
+      appBar: AppBar(
+        centerTitle: true,
+        elevation: 5,
         title: const Text('Edit Booking'),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
@@ -121,7 +128,8 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
                 ),
                 TextButton(
                   onPressed: () => _selectDate(context),
-                  child: const Text('Select Date', style: TextStyle(fontSize: 14)),
+                  child:
+                      const Text('Select Date', style: TextStyle(fontSize: 14)),
                 ),
               ],
             ),
@@ -135,7 +143,8 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
                 ),
                 TextButton(
                   onPressed: () => _selectTime(context),
-                  child: const Text('Select Time', style: TextStyle(fontSize: 14)),
+                  child:
+                      const Text('Select Time', style: TextStyle(fontSize: 14)),
                 ),
               ],
             ),
@@ -144,7 +153,8 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
               onPressed: _updateBooking,
               child: const Text('Update Booking'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
                 backgroundColor: AppColors.secondaryColor,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(

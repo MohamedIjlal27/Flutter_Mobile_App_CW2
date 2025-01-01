@@ -1,12 +1,12 @@
-import 'package:e_travel/constants/app_constants.dart';
+import 'package:e_travel/core/constants/app_constants.dart';
 import 'package:e_travel/screens/auth/login_screen.dart';
 import 'package:e_travel/screens/home_screen.dart';
-import 'package:e_travel/utils/theme_colors.dart';
+import 'package:e_travel/core/config/theme/theme_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../constants/custom_fonts.dart';
+import '../core/constants/custom_fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SplashScreen extends StatefulWidget {

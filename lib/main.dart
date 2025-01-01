@@ -1,7 +1,7 @@
-import 'package:e_travel/constants/app_constants.dart';
-import 'package:e_travel/firebase_options.dart';
+import 'package:e_travel/core/constants/app_constants.dart';
+import 'package:e_travel/core/config/firebase_options.dart';
 import 'package:e_travel/screens/splash_screen.dart';
-import 'package:e_travel/utils/colors.dart';
+import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

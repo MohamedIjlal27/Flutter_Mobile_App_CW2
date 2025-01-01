@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_travel/screens/edit_booking_screen.dart';
-import 'package:e_travel/utils/colors.dart';
+import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -43,7 +43,8 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
     if (bookingId.isNotEmpty) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => EditBookingScreen(bookingId: bookingId)),
+        MaterialPageRoute(
+            builder: (context) => EditBookingScreen(bookingId: bookingId)),
       );
     }
   }
@@ -53,9 +54,12 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: const Text('Cancel Booking', style: TextStyle(fontWeight: FontWeight.bold)),
-          content: const Text('Are you sure you want to cancel this booking?', style: TextStyle(fontSize: 16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Text('Cancel Booking',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          content: const Text('Are you sure you want to cancel this booking?',
+              style: TextStyle(fontSize: 16)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -73,7 +77,8 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
     if (confirmCancel == true) {
       await _firestore.collection('bookings').doc(bookingId).delete();
       await _loadBookings();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking canceled successfully.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Booking canceled successfully.')));
     }
   }
 
@@ -83,7 +88,7 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
       appBar: AppBar(
         elevation: 5,
         title: const Text('My Bookings'),
-          backgroundColor: Colors.teal,
+        backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
@@ -104,9 +109,8 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
                   elevation: 8,
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      gradient: AppGradients.primaryGradient
-                    ),
+                        borderRadius: BorderRadius.circular(15),
+                        gradient: AppGradients.primaryGradient),
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,29 +151,38 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Container(
-                              margin: const EdgeInsets.only(right: 8), // Add space between buttons
+                              margin: const EdgeInsets.only(
+                                  right: 8), // Add space between buttons
                               child: ElevatedButton(
-                                onPressed: () => _editBooking(booking['bookingId'] ?? ''),
+                                onPressed: () =>
+                                    _editBooking(booking['bookingId'] ?? ''),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue, // Button color
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), // Padding for buttons
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 10), // Padding for buttons
                                 ),
-                                child: const Text('Edit', style: TextStyle(color: Colors.white)),
+                                child: const Text('Edit',
+                                    style: TextStyle(color: Colors.white)),
                               ),
                             ),
                             ElevatedButton(
-                              onPressed: () => _cancelBooking(booking['bookingId'] ?? ''),
+                              onPressed: () =>
+                                  _cancelBooking(booking['bookingId'] ?? ''),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red, // Button color
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), // Padding for buttons
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10), // Padding for buttons
                               ),
-                              child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+                              child: const Text('Cancel',
+                                  style: TextStyle(color: Colors.white)),
                             ),
                           ],
                         ),

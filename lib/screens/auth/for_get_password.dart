@@ -1,6 +1,6 @@
-import 'package:e_travel/constants/app_constants.dart';
-import 'package:e_travel/constants/custom_fonts.dart';
-import 'package:e_travel/utils/theme_colors.dart';
+import 'package:e_travel/core/constants/app_constants.dart';
+import 'package:e_travel/core/constants/custom_fonts.dart';
+import 'package:e_travel/core/config/theme/theme_colors.dart';
 import 'package:e_travel/widgets/custom_buttons.dart';
 import 'package:e_travel/widgets/custom_textform_feild.dart';
 import 'package:firebase_auth/firebase_auth.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:e_travel/utils/theme_colors.dart';
+import 'package:e_travel/core/config/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomButton extends StatelessWidget {

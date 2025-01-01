@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:e_travel/constants/locations.dart';
+import 'package:e_travel/core/constants/locations.dart';
 import 'package:e_travel/models/location_model.dart';
 import 'package:e_travel/screens/details_screen.dart';
 import 'package:e_travel/widgets/custom_drawer.dart';

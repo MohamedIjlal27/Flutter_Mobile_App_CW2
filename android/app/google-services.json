@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "796832020397",
+    "project_id": "x-clone-217a4",
+    "storage_bucket": "x-clone-217a4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:796832020397:android:4304e15ee413915b259324",
+        "android_client_info": {
+          "package_name": "com.e_travel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "796832020397-30mr2205hvk4tbosjp3ipqh7j98gd29m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDO4Od3zTq4nvNWvTn5pyEaSiEZ5PO-_-g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "796832020397-2uicpk5494phab1uhmfgdkd29s6beaqv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:796832020397:android:39c2f8554d172be7259324",
+        "android_client_info": {
+          "package_name": "com.example.travel_mate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "796832020397-30mr2205hvk4tbosjp3ipqh7j98gd29m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDO4Od3zTq4nvNWvTn5pyEaSiEZ5PO-_-g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "796832020397-2uicpk5494phab1uhmfgdkd29s6beaqv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

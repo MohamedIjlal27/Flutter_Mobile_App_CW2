@@ -25,3 +25,17 @@ class AuthPasswordResetSent extends AuthState {
 
   AuthPasswordResetSent(this.email);
 }
+
+class AuthSignUpSuccess extends AuthState {
+  final String email;
+
+  AuthSignUpSuccess(this.email);
+}
+
+class AuthEmailAlreadyInUse extends AuthState {
+  final String email;
+
+  AuthEmailAlreadyInUse(this.email);
+}
+
+class AuthInvalidCredentials extends AuthState {}

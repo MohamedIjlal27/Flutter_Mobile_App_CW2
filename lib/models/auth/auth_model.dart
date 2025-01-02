@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class AuthUser {
   final String? uid;
   final String? email;
@@ -19,8 +21,9 @@ class AuthUser {
       email: map['email'] as String?,
       name: map['name'] as String?,
       profileImage: map['profileImage'] as String?,
-      createdAt:
-          map['createdAt'] != null ? (map['createdAt'] as DateTime) : null,
+      createdAt: map['createdAt'] != null
+          ? (map['createdAt'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -30,7 +33,7 @@ class AuthUser {
       'email': email,
       'name': name,
       'profileImage': profileImage,
-      'createdAt': createdAt,
+      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
     };
   }
 

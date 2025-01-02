@@ -79,6 +79,8 @@ class _LoginScreenState extends State<LoginScreen>
       listener: (context, state) {
         if (state is AuthAuthenticated) {
           Get.offAll(() => const HomeScreen());
+        } else if (state is AuthInvalidCredentials) {
+          _showErrorSnackBar('Invalid email or password. Please try again.');
         } else if (state is AuthError) {
           _showErrorSnackBar(state.message);
         }

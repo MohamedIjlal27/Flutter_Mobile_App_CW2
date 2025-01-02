@@ -3,7 +3,6 @@ import 'package:e_travel/blocs/auth/auth_event.dart';
 import 'package:e_travel/blocs/auth/auth_state.dart';
 import 'package:e_travel/core/constants/app_constants.dart';
 import 'package:e_travel/core/constants/custom_fonts.dart';
-import 'package:e_travel/screens/home_screen.dart';
 import 'package:e_travel/core/config/theme/theme_colors.dart';
 import 'package:e_travel/widgets/custom_buttons.dart';
 import 'package:e_travel/widgets/custom_textform_feild.dart';
@@ -80,8 +79,24 @@ class _SignUpScreenState extends State<SignUpScreen>
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is AuthAuthenticated) {
-          Get.offAll(() => const HomeScreen());
+        if (state is AuthSignUpSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Registration successful! ',
+                style: TextStyle(color: ThemeColors.lightText),
+              ),
+              backgroundColor: ThemeColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              margin: const EdgeInsets.all(10),
+            ),
+          );
+          Get.back();
+        } else if (state is AuthEmailAlreadyInUse) {
+          _showErrorSnackBar(
+              'This email is already registered. Please login instead.');
         } else if (state is AuthError) {
           _showErrorSnackBar(state.message);
         }

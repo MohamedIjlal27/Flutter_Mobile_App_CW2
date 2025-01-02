@@ -1,12 +1,11 @@
 import 'package:e_travel/screens/booking_sheet.dart';
-import 'package:e_travel/screens/map_screen.dart';
 import 'package:e_travel/models/location_model.dart';
 import 'package:e_travel/core/config/theme/colors.dart';
-import 'package:e_travel/widgets/custom_details_screen_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:e_travel/widgets/details_tab.dart';
+import 'package:e_travel/widgets/reviews_tab.dart';
 
 class DetailScreen extends StatefulWidget {
   final Location location;
@@ -17,16 +16,24 @@ class DetailScreen extends StatefulWidget {
   _DetailScreenState createState() => _DetailScreenState();
 }
 
-class _DetailScreenState extends State<DetailScreen> {
+class _DetailScreenState extends State<DetailScreen>
+    with SingleTickerProviderStateMixin {
   bool isFavorite = false;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _checkIfFavorite();
   }
 
-  // Check if the current location is marked as favorite
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   void _checkIfFavorite() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -42,7 +49,6 @@ class _DetailScreenState extends State<DetailScreen> {
     }
   }
 
-  // Toggle favorite status and update Firebase
   void _toggleFavorite() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -67,11 +73,18 @@ class _DetailScreenState extends State<DetailScreen> {
     }
   }
 
+  void _showBookingBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => BookingBottomSheet(location: widget.location),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(130),
         child: AppBar(
           automaticallyImplyLeading: false,
           backgroundColor: AppColors.secondaryColor,
@@ -79,9 +92,7 @@ class _DetailScreenState extends State<DetailScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -103,164 +114,28 @@ class _DetailScreenState extends State<DetailScreen> {
               ),
             ],
           ),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: 'Details'),
+              Tab(text: 'Reviews & Rating'),
+            ],
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Colors.white,
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Location Image
-            Container(
-              width: double.infinity,
-              height: 250,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(widget.location.imageUrl),
-                  fit: BoxFit.cover,
-                ),
-                borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(20)),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Location Description
-                  Text(
-                    widget.location.name,
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.location.description,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black54,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Rating Section
-                  Row(
-                    children: [
-                      const Text(
-                        'Rating: ',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.teal,
-                        ),
-                      ),
-                      RatingBarIndicator(
-                        rating: widget.location.rating,
-                        itemBuilder: (context, index) => const Icon(
-                          Icons.star,
-                          color: Colors.amber,
-                        ),
-                        itemCount: 5,
-                        itemSize: 30.0,
-                        direction: Axis.horizontal,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Best Time to Visit
-                  const Text(
-                    'Best Time to Visit',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.location.bestTimeToVisit,
-                    style: const TextStyle(fontSize: 16, color: Colors.black54),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Location Details Card
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 4,
-                    color: Colors.teal.shade50,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Location Details',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 12),
-                          Text('Category: ${widget.location.category}'),
-                          Text('Address: ${widget.location.address}'),
-                          Text('Rating: ${widget.location.rating}'),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Make Booking Button
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CustomButton(
-                        title: 'View On Map',
-                        backgroundColor: Colors
-                            .greenAccent, // Button color for "View On Map"
-                        textColor: Colors.black, // Text color for "View On Map"
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    MapScreen(location: widget.location)),
-                          );
-                          print('View On Map');
-                        },
-                      ),
-                      const SizedBox(width: 20),
-                      CustomButton(
-                        title: 'Book Now',
-                        backgroundColor:
-                            Colors.orangeAccent, // Button color for "Book Now"
-                        textColor: Colors.white, // Text color for "Book Now"
-                        onPressed: () {
-                          _showBookingBottomSheet();
-                          print('Booking confirmed!');
-                        },
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          DetailsTab(
+            location: widget.location,
+            onBookNow: _showBookingBottomSheet,
+          ),
+          ReviewsTab(locationId: widget.location.name),
+        ],
       ),
-    );
-  }
-
-  void _showBookingBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return BookingBottomSheet(location: widget.location);
-      },
     );
   }
 }

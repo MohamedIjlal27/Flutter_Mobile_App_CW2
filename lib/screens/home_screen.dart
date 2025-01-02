@@ -4,8 +4,6 @@ import 'package:e_travel/models/location_model.dart';
 import 'package:e_travel/widgets/custom_drawer.dart';
 import 'package:e_travel/widgets/section_title.dart';
 import 'package:e_travel/widgets/location_list.dart';
-import 'package:e_travel/widgets/summer_location_list.dart';
-import 'package:e_travel/widgets/winter_location_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 

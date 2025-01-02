@@ -28,13 +28,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchUserProfile() async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      DocumentSnapshot userDoc =
-          await _firestore.collection('users').doc(user.uid).get();
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
+        if (userDoc.exists && userDoc.data() != null) {
+          final data = userDoc.data() as Map<String, dynamic>;
+          setState(() {
+            _profileImageUrl = data['profileImage'] as String?;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching user profile: $e');
+      // Set default profile image URL if there's an error
       setState(() {
-        _profileImageUrl = userDoc[
-            'profileImage']; // Assuming 'profileImage' is the key in your Firestore document
+        _profileImageUrl = null;
       });
     }
   }
@@ -153,10 +163,11 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(8.0),
               child: CircleAvatar(
                 radius: 25,
-                backgroundImage: _profileImageUrl != null
-                    ? NetworkImage(_profileImageUrl!) // Use the fetched URL
+                backgroundImage: _profileImageUrl != null &&
+                        _profileImageUrl!.isNotEmpty
+                    ? NetworkImage(_profileImageUrl!)
                     : const NetworkImage(
-                        'https://img.freepik.com/free-photo/young-male-posing-isolated-against-blank-studio-wall_273609-12356.jpg'), // Default image if URL is not available
+                        'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'),
               ),
             ),
           ],

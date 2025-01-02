@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_travel/core/constants/locations.dart';
 import 'package:e_travel/models/location_model.dart';
-import 'package:e_travel/screens/details_screen.dart';
 import 'package:e_travel/widgets/custom_drawer.dart';
+import 'package:e_travel/widgets/section_title.dart';
+import 'package:e_travel/widgets/location_list.dart';
+import 'package:e_travel/widgets/summer_location_list.dart';
+import 'package:e_travel/widgets/winter_location_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -16,15 +19,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  String? _profileImageUrl; // Declare a variable to hold the profile image URL
+  String? _profileImageUrl;
 
   @override
   void initState() {
     super.initState();
     _fetchUserProfile();
-    _filteredLocations = locations; // Initialize with all locations
-
-    // ... other initialization
+    _filteredLocations = locations;
   }
 
   Future<void> _fetchUserProfile() async {
@@ -42,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       print('Error fetching user profile: $e');
-      // Set default profile image URL if there's an error
       setState(() {
         _profileImageUrl = null;
       });
@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _searchTerm = '';
-  String? _selectedCategory; // Added variable for selected category
+  String? _selectedCategory;
   List<Location> _filteredLocations = [];
 
   void _onSearchChanged(String searchTerm) {
@@ -63,13 +63,13 @@ class _HomeScreenState extends State<HomeScreen> {
   void _clearSearch() {
     setState(() {
       _searchTerm = '';
-      _selectedCategory = null; // Clear selected category
-      _filteredLocations = locations; // Display all locations again
+      _selectedCategory = null;
+      _filteredLocations = locations;
     });
   }
 
   void _applyFilter() {
-    _showFilterDialog(); // Show filter dialog
+    _showFilterDialog();
   }
 
   void _showFilterDialog() {
@@ -77,45 +77,45 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Select Category'),
+          title: const Text('Select Category'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                title: Text('All'),
+                title: const Text('All'),
                 onTap: () {
                   setState(() {
-                    _selectedCategory = null; // Reset category filter
+                    _selectedCategory = null;
                     Navigator.of(context).pop();
                     _filterLocations();
                   });
                 },
               ),
               ListTile(
-                title: Text('Popular'),
+                title: const Text('Popular'),
                 onTap: () {
                   setState(() {
-                    _selectedCategory = 'Popular'; // Set to Popular
+                    _selectedCategory = 'Popular';
                     Navigator.of(context).pop();
                     _filterLocations();
                   });
                 },
               ),
               ListTile(
-                title: Text('Summer'),
+                title: const Text('Summer'),
                 onTap: () {
                   setState(() {
-                    _selectedCategory = 'Summer'; // Set to Summer
+                    _selectedCategory = 'Summer';
                     Navigator.of(context).pop();
                     _filterLocations();
                   });
                 },
               ),
               ListTile(
-                title: Text('Winter'),
+                title: const Text('Winter'),
                 onTap: () {
                   setState(() {
-                    _selectedCategory = 'Winter'; // Set to Winter
+                    _selectedCategory = 'Winter';
                     Navigator.of(context).pop();
                     _filterLocations();
                   });
@@ -199,29 +199,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(
-                    width: 8), // Spacing between TextField and button
+                const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: _applyFilter,
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Colors.orange, // Set text color
+                    backgroundColor: Colors.orange,
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(16), // Rounded corners
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    shadowColor: Colors.black.withOpacity(0.25), // Shadow color
-                    elevation: 6, // Add elevation
+                    shadowColor: Colors.black.withOpacity(0.25),
+                    elevation: 6,
                   ),
                   child: const Padding(
-                    padding: EdgeInsets.symmetric(
-                        vertical: 12.0,
-                        horizontal: 16.0), // Padding for larger click target
+                    padding:
+                        EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
                     child: Text(
                       'Filter',
                       style: TextStyle(
-                        fontSize: 16, // Slightly larger font size
-                        fontWeight: FontWeight.bold, // Bold font weight
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -231,402 +228,26 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SectionTitle(title: 'Popular', backgroundColor: Colors.orange),
           LocationList(
-            _filteredLocations
+            locations: _filteredLocations
                 .where((loc) => loc.category == 'Popular')
                 .toList(),
-            size: 250,
+            category: 'Popular',
           ),
           const SectionTitle(title: 'Summer', backgroundColor: Colors.blue),
-          SummerLocationList(
-            _filteredLocations
+          LocationList(
+            locations: _filteredLocations
                 .where((loc) => loc.category == 'Summer')
                 .toList(),
+            category: 'Summer',
           ),
           const SectionTitle(title: 'Winter', backgroundColor: Colors.teal),
-          WinterLocationList(
-            _filteredLocations
+          LocationList(
+            locations: _filteredLocations
                 .where((loc) => loc.category == 'Winter')
                 .toList(),
+            category: 'Winter',
           ),
         ],
-      ),
-    );
-  }
-}
-
-// Other parts of the code remain unchanged.
-// SectionTitle, LocationList, SummerLocationList, and WinterLocationList remain the same.
-
-// Custom Drawer
-
-class SectionTitle extends StatelessWidget {
-  final String title;
-  final Color backgroundColor;
-
-  const SectionTitle({
-    Key? key,
-    required this.title,
-    required this.backgroundColor,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(
-            16), // Increased rounding for more modern look
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12), // Slightly lighter shadow
-            spreadRadius: 2, // Expanded shadow for more depth
-            blurRadius: 8, // Slightly blurrier shadow
-            offset: const Offset(0, 4), // Shadow position adjustment
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(
-          20.0), // Increased padding for more spacious feel
-      margin: const EdgeInsets.symmetric(
-          vertical: 12.0, horizontal: 16.0), // Adjusted margin for balance
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 28, // Slightly larger font for emphasis
-          fontWeight:
-              FontWeight.w700, // Stronger font weight for more visibility
-          color: Colors.white,
-          letterSpacing:
-              1.5, // Increased letter spacing for clearer readability
-          shadows: [
-            Shadow(
-              blurRadius: 2.0,
-              color: Colors.black
-                  .withOpacity(0.2), // Soft shadow for the text for contrast
-              offset: Offset(1, 1), // Offset shadow for text clarity
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class LocationList extends StatelessWidget {
-  final List<Location> locations;
-  final double size;
-
-  const LocationList(this.locations, {Key? key, required this.size})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: size, // Make sure the size is passed correctly
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: locations.length,
-        itemBuilder: (context, index) {
-          final location = locations[index];
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DetailScreen(location: location),
-                ),
-              );
-            },
-            child: Container(
-              width: 200, // You can adjust this width depending on your design
-              margin: const EdgeInsets.all(8.0),
-              child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 5,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: Image.network(
-                          location.imageUrl,
-                          fit: BoxFit.cover,
-                          width: double
-                              .infinity, // Ensure it stretches across the width
-                          height: double
-                              .infinity, // Ensure it stretches across the height
-                        ),
-                      ),
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.black.withOpacity(0.5),
-                                Colors.transparent
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                location.name,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                location.description,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  _buildRatingStars(location.rating),
-                                  const SizedBox(width: 8),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildRatingStars(double rating) {
-    List<Widget> stars = [];
-    for (int i = 0; i < 5; i++) {
-      stars.add(Icon(
-        i < rating ? Icons.star : Icons.star_border,
-        color: i < rating ? Colors.amber : Colors.white,
-        size: 16,
-      ));
-    }
-    return Row(
-      children: stars,
-    );
-  }
-}
-
-// Summer Locations List Widget (Horizontal List View)
-class SummerLocationList extends StatelessWidget {
-  final List<Location> locations;
-
-  const SummerLocationList(this.locations, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 180, // Set a height for the ListView
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: locations.length,
-        itemBuilder: (context, index) {
-          final location = locations[index];
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DetailScreen(location: location),
-                ),
-              );
-            },
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 8,
-              margin: const EdgeInsets.all(8.0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  width: 250, // Explicit width for the container
-                  height: 180, // Explicit height for the container
-                  child: Stack(
-                    children: [
-                      // Ensure the image is constrained
-                      Positioned.fill(
-                        child: Image.network(
-                          location.imageUrl,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      // Gradient overlay to make text more readable
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.black.withOpacity(0.4),
-                                Colors.transparent
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      // Content on top of the image
-                      Positioned(
-                        bottom: 8,
-                        left: 8,
-                        right: 8,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Location name with enhanced styling
-                            Text(
-                              location.name,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 5.0,
-                                    color: Colors.black54,
-                                    offset: Offset(2.0, 2.0),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            // Location description with a smaller font
-                            Text(
-                              location.description,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class WinterLocationList extends StatelessWidget {
-  final List<Location> locations;
-
-  const WinterLocationList(this.locations, {Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 160,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: locations.length,
-        itemBuilder: (context, index) {
-          final location = locations[index];
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DetailScreen(location: location),
-                ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // Circular Avatar with Shadow and Border
-                  ClipOval(
-                    child: Container(
-                      width: 120, // Size of the circle
-                      height: 120,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(60),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 6,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: Image.network(
-                          location.imageUrl,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Overlay Text with Location Name
-                  Positioned(
-                    bottom: 8,
-                    left: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 4, horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        location.name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
       ),
     );
   }

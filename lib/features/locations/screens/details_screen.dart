@@ -1,11 +1,13 @@
 import 'package:e_travel/features/bookings/screens/booking_sheet.dart';
+import 'package:e_travel/features/reviews/widgets/reviews_tab.dart';
 import 'package:e_travel/models/location_model.dart';
 import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:e_travel/widgets/details_tab.dart';
-import 'package:e_travel/widgets/reviews_tab.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:e_travel/features/reviews/bloc/review_bloc.dart';
 
 class DetailScreen extends StatefulWidget {
   final Location location;
@@ -82,59 +84,62 @@ class _DetailScreenState extends State<DetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(130),
-        child: AppBar(
-          automaticallyImplyLeading: false,
-          backgroundColor: AppColors.secondaryColor,
-          title: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  widget.location.name,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+    return BlocProvider(
+      create: (context) => ReviewBloc(),
+      child: Scaffold(
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(130),
+          child: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: AppColors.secondaryColor,
+            title: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.location.name,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                 ),
-              ),
-              IconButton(
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: Colors.red,
+                IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: Colors.red,
+                  ),
+                  onPressed: _toggleFavorite,
                 ),
-                onPressed: _toggleFavorite,
-              ),
-            ],
-          ),
-          bottom: TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Details'),
-              Tab(text: 'Reviews & Rating'),
-            ],
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            indicatorColor: Colors.white,
+              ],
+            ),
+            bottom: TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Details'),
+                Tab(text: 'Reviews & Rating'),
+              ],
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              indicatorColor: Colors.white,
+            ),
           ),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          DetailsTab(
-            location: widget.location,
-            onBookNow: _showBookingBottomSheet,
-          ),
-          ReviewsTab(locationId: widget.location.name),
-        ],
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            DetailsTab(
+              location: widget.location,
+              onBookNow: _showBookingBottomSheet,
+            ),
+            ReviewsTab(locationId: widget.location.name),
+          ],
+        ),
       ),
     );
   }

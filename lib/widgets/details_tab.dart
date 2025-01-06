@@ -4,8 +4,12 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:e_travel/models/location_model.dart';
 import 'package:e_travel/widgets/custom_details_screen_button.dart';
 import 'package:e_travel/core/config/theme/colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:e_travel/features/reviews/bloc/review_bloc.dart';
+import 'package:e_travel/features/reviews/bloc/review_state.dart';
+import 'package:e_travel/features/reviews/bloc/review_event.dart';
 
-class DetailsTab extends StatelessWidget {
+class DetailsTab extends StatefulWidget {
   final Location location;
   final VoidCallback onBookNow;
 
@@ -14,6 +18,17 @@ class DetailsTab extends StatelessWidget {
     required this.location,
     required this.onBookNow,
   }) : super(key: key);
+
+  @override
+  State<DetailsTab> createState() => _DetailsTabState();
+}
+
+class _DetailsTabState extends State<DetailsTab> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ReviewBloc>().add(LoadLocationRating(widget.location.name));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +40,7 @@ class DetailsTab extends StatelessWidget {
             height: 250,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(location.imageUrl),
+                image: NetworkImage(widget.location.imageUrl),
                 fit: BoxFit.cover,
               ),
               borderRadius:
@@ -38,7 +53,7 @@ class DetailsTab extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  location.name,
+                  widget.location.name,
                   style: const TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
@@ -47,7 +62,7 @@ class DetailsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  location.description,
+                  widget.location.description,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.black54,
@@ -65,14 +80,32 @@ class DetailsTab extends StatelessWidget {
                         color: Colors.teal,
                       ),
                     ),
-                    RatingBarIndicator(
-                      rating: location.rating,
-                      itemBuilder: (context, _) => const Icon(
-                        Icons.star,
-                        color: Colors.amber,
-                      ),
-                      itemCount: 5,
-                      itemSize: 30.0,
+                    BlocBuilder<ReviewBloc, ReviewState>(
+                      builder: (context, state) {
+                        final rating =
+                            state is RatingLoaded ? state.rating : 0.0;
+                        return Row(
+                          children: [
+                            RatingBarIndicator(
+                              rating: rating,
+                              itemBuilder: (context, _) => const Icon(
+                                Icons.star,
+                                color: Colors.amber,
+                              ),
+                              itemCount: 5,
+                              itemSize: 30.0,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '(${rating.toStringAsFixed(1)})',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -87,7 +120,7 @@ class DetailsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  location.bestTimeToVisit,
+                  widget.location.bestTimeToVisit,
                   style: const TextStyle(fontSize: 16, color: Colors.black54),
                 ),
                 const SizedBox(height: 16),
@@ -108,9 +141,15 @@ class DetailsTab extends StatelessWidget {
                               fontSize: 18, fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 12),
-                        Text('Category: ${location.category}'),
-                        Text('Address: ${location.address}'),
-                        Text('Rating: ${location.rating}'),
+                        Text('Category: ${widget.location.category}'),
+                        Text('Address: ${widget.location.address}'),
+                        BlocBuilder<ReviewBloc, ReviewState>(
+                          builder: (context, state) {
+                            final rating =
+                                state is RatingLoaded ? state.rating : 0.0;
+                            return Text('Rating: ${rating.toStringAsFixed(1)}');
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -127,7 +166,8 @@ class DetailsTab extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => MapScreen(location: location),
+                            builder: (context) =>
+                                MapScreen(location: widget.location),
                           ),
                         );
                       },
@@ -137,7 +177,7 @@ class DetailsTab extends StatelessWidget {
                       title: 'Book Now',
                       backgroundColor: Colors.orangeAccent,
                       textColor: Colors.white,
-                      onPressed: onBookNow,
+                      onPressed: widget.onBookNow,
                     ),
                   ],
                 ),

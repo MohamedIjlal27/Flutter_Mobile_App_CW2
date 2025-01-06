@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_travel/core/constants/locations.dart';
-import 'package:e_travel/models/location_model.dart';
+import 'package:e_travel/features/locations/models/location_model.dart';
 import 'package:e_travel/widgets/custom_drawer.dart';
 import 'package:e_travel/widgets/section_title.dart';
 import 'package:e_travel/widgets/location_list.dart';
@@ -128,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _filterLocations() {
     setState(() {
-      _filteredLocations = locations.where((location) {
+      _filteredLocations = locations.where((Location location) {
         final matchesSearchTerm =
             location.name.toLowerCase().contains(_searchTerm.toLowerCase());
         final matchesCategory =

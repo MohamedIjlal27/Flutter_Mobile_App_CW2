@@ -1,7 +1,7 @@
+import 'package:e_travel/features/locations/models/location_model.dart';
 import 'package:e_travel/features/locations/screens/map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:e_travel/models/location_model.dart';
 import 'package:e_travel/widgets/custom_details_screen_button.dart';
 import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

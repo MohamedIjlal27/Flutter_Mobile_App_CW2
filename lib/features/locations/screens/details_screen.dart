@@ -1,6 +1,6 @@
 import 'package:e_travel/features/bookings/screens/booking_sheet.dart';
+import 'package:e_travel/features/locations/models/location_model.dart';
 import 'package:e_travel/features/reviews/widgets/reviews_tab.dart';
-import 'package:e_travel/models/location_model.dart';
 import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

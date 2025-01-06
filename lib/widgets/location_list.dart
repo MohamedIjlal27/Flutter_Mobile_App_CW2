@@ -1,7 +1,7 @@
 export 'location_list.dart';
 
+import 'package:e_travel/features/locations/models/location_model.dart';
 import 'package:flutter/material.dart';
-import 'package:e_travel/models/location_model.dart';
 import 'package:e_travel/features/locations/screens/details_screen.dart';
 
 class LocationList extends StatelessWidget {

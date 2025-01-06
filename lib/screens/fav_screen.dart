@@ -1,5 +1,5 @@
 import 'package:e_travel/models/location_model.dart';
-import 'package:e_travel/screens/details_screen.dart';
+import 'package:e_travel/features/locations/screens/details_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +33,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         final data = doc.data();
         locations.add(Location(
           name: data['name'],
-          description: 'click to view more details', // You can modify this later
+          description:
+              'click to view more details', // You can modify this later
           category: 'Category here', // Modify as needed
           imageUrl: data['imageUrl'],
           latitude: 0.0, // Add more data as needed
@@ -75,7 +76,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-        ),),
+        ),
+      ),
       body: favoriteLocations.isEmpty
           ? const Center(child: Text('No favorites yet!'))
           : ListView.builder(
@@ -116,7 +118,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DetailScreen(location: location),
+                          builder: (context) =>
+                              DetailScreen(location: location),
                         ),
                       );
                     },

@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:e_travel/features/auth/repositories/auth_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:e_travel/blocs/auth/auth_event.dart';
-import 'package:e_travel/blocs/auth/auth_state.dart';
-import 'package:e_travel/repositories/auth_repository.dart';
+import 'package:e_travel/features/auth/bloc/auth_event.dart';
+import 'package:e_travel/features/auth/bloc/auth_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {

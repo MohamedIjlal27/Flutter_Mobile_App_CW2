@@ -1,7 +1,7 @@
 import 'package:e_travel/core/constants/app_constants.dart';
-import 'package:e_travel/screens/auth/login_screen.dart';
-import 'package:e_travel/screens/home_screen.dart';
+import 'package:e_travel/features/auth/screens/login_screen.dart';
 import 'package:e_travel/core/config/theme/theme_colors.dart';
+import 'package:e_travel/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';

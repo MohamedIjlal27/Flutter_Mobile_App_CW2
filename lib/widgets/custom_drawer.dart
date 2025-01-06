@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:e_travel/screens/auth/login_screen.dart';
-import 'package:e_travel/screens/bookings_screen.dart';
+import 'package:e_travel/features/auth/screens/login_screen.dart';
+import 'package:e_travel/features/bookings/screens/bookings_screen.dart';
+import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:e_travel/screens/fav_screen.dart';
 import 'package:e_travel/screens/profile_screen.dart';
-import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';

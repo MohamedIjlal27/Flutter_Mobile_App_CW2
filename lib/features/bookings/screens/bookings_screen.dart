@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:e_travel/screens/edit_booking_screen.dart';
+import 'package:e_travel/features/bookings/screens/edit_booking_screen.dart';
 import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +32,7 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
       setState(() {
         _bookings = userBookingsSnapshot.docs.map((doc) {
           var data = doc.data() as Map<String, dynamic>;
-          data['bookingId'] = doc.id; // Store the document ID
+          data['bookingId'] = doc.id;
           return data;
         }).toList();
       });

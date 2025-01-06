@@ -1,12 +1,9 @@
-import 'package:e_travel/blocs/auth/auth_bloc.dart';
-import 'package:e_travel/blocs/auth/auth_event.dart';
-import 'package:e_travel/blocs/auth/auth_state.dart';
 import 'package:e_travel/core/constants/app_constants.dart';
 import 'package:e_travel/core/constants/custom_fonts.dart';
-import 'package:e_travel/screens/auth/for_get_password.dart';
-import 'package:e_travel/screens/auth/signup_screen.dart';
-import 'package:e_travel/screens/home_screen.dart';
 import 'package:e_travel/core/config/theme/theme_colors.dart';
+import 'package:e_travel/features/auth/bloc/auth_bloc.dart';
+import 'package:e_travel/features/auth/bloc/auth_event.dart';
+import 'package:e_travel/features/auth/bloc/auth_state.dart';
 import 'package:e_travel/widgets/custom_buttons.dart';
 import 'package:e_travel/widgets/custom_textform_feild.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,18 +11,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({Key? key}) : super(key: key);
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _SignUpScreenState createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
+class _SignUpScreenState extends State<SignUpScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -47,8 +47,10 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -77,10 +79,24 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state is AuthAuthenticated) {
-          Get.offAll(() => const HomeScreen());
-        } else if (state is AuthInvalidCredentials) {
-          _showErrorSnackBar('Invalid email or password. Please try again.');
+        if (state is AuthSignUpSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Registration successful! ',
+                style: TextStyle(color: ThemeColors.lightText),
+              ),
+              backgroundColor: ThemeColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              margin: const EdgeInsets.all(10),
+            ),
+          );
+          Get.back();
+        } else if (state is AuthEmailAlreadyInUse) {
+          _showErrorSnackBar(
+              'This email is already registered. Please login instead.');
         } else if (state is AuthError) {
           _showErrorSnackBar(state.message);
         }
@@ -98,6 +114,7 @@ class _LoginScreenState extends State<LoginScreen>
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Hero(
                         tag: 'appLogo',
@@ -117,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen>
                           child: applogo,
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
                       Text(
                         appname,
                         style: CustomFonts.titleFont(
@@ -127,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 10),
                       Container(
                         padding: const EdgeInsets.all(25),
                         decoration: BoxDecoration(
@@ -147,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen>
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
-                                'Welcome Back',
+                                'Create Account',
                                 style: GoogleFonts.poppins(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -155,7 +172,19 @@ class _LoginScreenState extends State<LoginScreen>
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 25),
+                              const SizedBox(height: 10),
+                              CustomTextFormField(
+                                controller: _nameController,
+                                label: 'Name',
+                                hint: 'Enter your name',
+                                icon: Icons.person_outline_rounded,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your name';
+                                  }
+                                  return null;
+                                },
+                              ),
                               CustomTextFormField(
                                 controller: _emailController,
                                 label: 'Email',
@@ -171,7 +200,6 @@ class _LoginScreenState extends State<LoginScreen>
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 20),
                               CustomTextFormField(
                                 controller: _passwordController,
                                 label: 'Password',
@@ -183,25 +211,30 @@ class _LoginScreenState extends State<LoginScreen>
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter your password';
                                   }
+                                  if (value.length < 6) {
+                                    return 'Password must be at least 6 characters';
+                                  }
                                   return null;
                                 },
                               ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed: () => Get.to(
-                                      () => const ForgotPasswordScreen()),
-                                  child: Text(
-                                    'Forgot Password?',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      color: ThemeColors.primaryColor,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
+                              CustomTextFormField(
+                                controller: _confirmPasswordController,
+                                label: 'Confirm Password',
+                                hint: 'Confirm your password',
+                                icon: Icons.lock_outline_rounded,
+                                isPassword: _obscureText,
+                                toggleVisibility: _togglePasswordVisibility,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please confirm your password';
+                                  }
+                                  if (value != _passwordController.text) {
+                                    return 'Passwords do not match';
+                                  }
+                                  return null;
+                                },
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 30),
                               BlocBuilder<AuthBloc, AuthState>(
                                 builder: (context, state) {
                                   if (state is AuthLoading) {
@@ -212,12 +245,20 @@ class _LoginScreenState extends State<LoginScreen>
                                     );
                                   }
                                   return CustomButton(
-                                    text: 'Login',
+                                    text: 'Sign Up',
                                     onPressed: () {
                                       if (_formKey.currentState?.validate() ??
                                           false) {
+                                        if (_passwordController.text !=
+                                            _confirmPasswordController.text) {
+                                          _showErrorSnackBar(
+                                              'Passwords do not match');
+                                          return;
+                                        }
                                         context.read<AuthBloc>().add(
-                                              AuthLoginRequested(
+                                              AuthSignUpRequested(
+                                                name:
+                                                    _nameController.text.trim(),
                                                 email: _emailController.text
                                                     .trim(),
                                                 password: _passwordController
@@ -239,20 +280,20 @@ class _LoginScreenState extends State<LoginScreen>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Don\'t have an account? ',
+                            'Already have an account? ',
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: ThemeColors.lightText,
                             ),
                           ),
                           TextButton(
-                            onPressed: () => Get.to(() => const SignUpScreen()),
+                            onPressed: () => Get.back(),
                             style: TextButton.styleFrom(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 10),
                             ),
                             child: Text(
-                              'Sign Up',
+                              'Login',
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,

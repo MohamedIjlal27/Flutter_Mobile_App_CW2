@@ -1,4 +1,4 @@
-import 'package:e_travel/models/auth/auth_model.dart';
+import 'package:e_travel/features/auth/models/auth_model.dart';
 
 abstract class AuthState {}
 

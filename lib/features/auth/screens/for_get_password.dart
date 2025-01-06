@@ -1,9 +1,9 @@
-import 'package:e_travel/blocs/auth/auth_bloc.dart';
-import 'package:e_travel/blocs/auth/auth_event.dart';
-import 'package:e_travel/blocs/auth/auth_state.dart';
 import 'package:e_travel/core/constants/app_constants.dart';
 import 'package:e_travel/core/constants/custom_fonts.dart';
 import 'package:e_travel/core/config/theme/theme_colors.dart';
+import 'package:e_travel/features/auth/bloc/auth_bloc.dart';
+import 'package:e_travel/features/auth/bloc/auth_event.dart';
+import 'package:e_travel/features/auth/bloc/auth_state.dart';
 import 'package:e_travel/widgets/custom_buttons.dart';
 import 'package:e_travel/widgets/custom_textform_feild.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

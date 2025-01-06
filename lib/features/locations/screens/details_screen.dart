@@ -1,4 +1,4 @@
-import 'package:e_travel/screens/booking_sheet.dart';
+import 'package:e_travel/features/bookings/screens/booking_sheet.dart';
 import 'package:e_travel/models/location_model.dart';
 import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';

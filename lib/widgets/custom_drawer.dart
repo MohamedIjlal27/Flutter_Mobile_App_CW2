@@ -4,6 +4,7 @@ import 'package:e_travel/features/bookings/screens/bookings_screen.dart';
 import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:e_travel/screens/fav_screen.dart';
 import 'package:e_travel/screens/profile_screen.dart';
+import 'package:e_travel/features/budget/screens/budget_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -82,6 +83,17 @@ class CustomDrawer extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (context) => BookingsListScreen()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.account_balance_wallet),
+                title: const Text('Budget Tracker'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const BudgetScreen()),
                   );
                 },
               ),

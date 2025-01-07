@@ -32,7 +32,7 @@ class BookingCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              booking.location,
+              booking.locationId,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -56,7 +56,7 @@ class BookingCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'People: ${booking.people}',
+              'People: ${booking.numberOfPeople}',
               style: const TextStyle(
                 fontSize: 16,
                 color: Colors.white70,

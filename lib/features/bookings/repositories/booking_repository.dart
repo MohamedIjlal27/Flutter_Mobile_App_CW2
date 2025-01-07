@@ -1,63 +1,94 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:e_travel/features/bookings/models/booking_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../models/booking_model.dart';
 
 class BookingRepository {
-  final FirebaseFirestore _firestore;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  BookingRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  // Get user's bookings collection reference
+  CollectionReference<Map<String, dynamic>> get _bookingsCollection =>
+      _firestore.collection('bookings');
 
-  Future<List<Booking>> getUserBookings(String userId) async {
-    try {
-      final snapshot = await _firestore
-          .collection('bookings')
-          .where('userId', isEqualTo: userId)
-          .get();
+  // Create a new booking
+  Future<void> createBooking(Booking booking) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
 
+    await _bookingsCollection.doc(booking.id).set(booking.toMap());
+  }
+
+  // Get all bookings for current user
+  Stream<List<Booking>> getUserBookings() {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    return _bookingsCollection
+        .where('userId', isEqualTo: user.uid)
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snapshot) {
       return snapshot.docs
           .map((doc) => Booking.fromMap(doc.data(), doc.id))
           .toList();
-    } catch (e) {
-      throw Exception('Failed to load bookings: ${e.toString()}');
-    }
+    });
   }
 
-  Future<void> createBooking(Booking booking) async {
-    try {
-      await _firestore.collection('bookings').add(booking.toMap());
-    } catch (e) {
-      throw Exception('Failed to create booking: ${e.toString()}');
-    }
+  // Get upcoming bookings for current user
+  Stream<List<Booking>> getUpcomingBookings() {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    return _bookingsCollection
+        .where('userId', isEqualTo: user.uid)
+        .where('date',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.now()))
+        .orderBy('date')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => Booking.fromMap(doc.data(), doc.id))
+          .toList();
+    });
   }
 
-  Future<void> updateBooking(Booking booking) async {
-    try {
-      await _firestore
-          .collection('bookings')
-          .doc(booking.id)
-          .update(booking.toMap());
-    } catch (e) {
-      throw Exception('Failed to update booking: ${e.toString()}');
-    }
+  // Update booking status
+  Future<void> updateBookingStatus(
+      String bookingId, BookingStatus status) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    await _bookingsCollection.doc(bookingId).update({
+      'status': status.toString().split('.').last,
+    });
   }
 
+  // Cancel booking
+  Future<void> cancelBooking(String bookingId) async {
+    await updateBookingStatus(bookingId, BookingStatus.cancelled);
+  }
+
+  // Delete booking (only if it's cancelled or completed)
   Future<void> deleteBooking(String bookingId) async {
-    try {
-      await _firestore.collection('bookings').doc(bookingId).delete();
-    } catch (e) {
-      throw Exception('Failed to delete booking: ${e.toString()}');
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    final doc = await _bookingsCollection.doc(bookingId).get();
+    if (!doc.exists) throw Exception('Booking not found');
+
+    final booking = Booking.fromMap(doc.data()!, doc.id);
+    if (booking.status != BookingStatus.cancelled &&
+        booking.status != BookingStatus.completed) {
+      throw Exception('Can only delete cancelled or completed bookings');
     }
+
+    await _bookingsCollection.doc(bookingId).delete();
   }
 
+  // Get booking by ID
   Future<Booking> getBookingById(String bookingId) async {
-    try {
-      final doc = await _firestore.collection('bookings').doc(bookingId).get();
-      if (!doc.exists) {
-        throw Exception('Booking not found');
-      }
-      return Booking.fromMap(doc.data()!, doc.id);
-    } catch (e) {
-      throw Exception('Failed to get booking: ${e.toString()}');
-    }
+    final doc = await _bookingsCollection.doc(bookingId).get();
+    if (!doc.exists) throw Exception('Booking not found');
+    return Booking.fromMap(doc.data()!, doc.id);
   }
 }

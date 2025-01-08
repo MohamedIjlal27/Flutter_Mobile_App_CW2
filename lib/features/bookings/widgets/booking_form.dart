@@ -106,7 +106,17 @@ class _BookingFormState extends State<BookingForm> {
       );
 
       context.read<BookingBloc>().add(CreateBooking(booking));
+
+      // Close the bottom sheet immediately
       Navigator.of(context).pop();
+
+      // Show a loading indicator in the main screen
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Processing your booking...'),
+          duration: Duration(seconds: 1),
+        ),
+      );
     }
   }
 
@@ -149,6 +159,7 @@ class _BookingFormState extends State<BookingForm> {
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
             ),
           );
         } else if (state is BookingError) {
@@ -156,6 +167,7 @@ class _BookingFormState extends State<BookingForm> {
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -417,6 +429,7 @@ class _BookingFormState extends State<BookingForm> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                     ),

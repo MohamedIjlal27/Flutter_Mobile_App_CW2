@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class BookingsListScreen extends StatefulWidget {
+  const BookingsListScreen({super.key});
+
   @override
   _BookingsListScreenState createState() => _BookingsListScreenState();
 }
@@ -13,24 +15,23 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   User? _currentUser;
-  List<Map<String, dynamic>> _bookings = [];
+  Stream<List<Map<String, dynamic>>>? _bookingsStream;
 
   @override
   void initState() {
     super.initState();
     _currentUser = _auth.currentUser;
-    _loadBookings();
+    _setupBookingsStream();
   }
 
-  Future<void> _loadBookings() async {
+  void _setupBookingsStream() {
     if (_currentUser != null) {
-      final userBookingsSnapshot = await _firestore
+      _bookingsStream = _firestore
           .collection('bookings')
           .where('userId', isEqualTo: _currentUser!.uid)
-          .get();
-
-      setState(() {
-        _bookings = userBookingsSnapshot.docs.map((doc) {
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs.map((doc) {
           var data = doc.data() as Map<String, dynamic>;
           data['bookingId'] = doc.id;
           return data;
@@ -41,10 +42,11 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
 
   Future<void> _editBooking(String bookingId) async {
     if (bookingId.isNotEmpty) {
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => EditBookingScreen(bookingId: bookingId)),
+          builder: (context) => EditBookingScreen(bookingId: bookingId),
+        ),
       );
     }
   }
@@ -75,10 +77,16 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
     );
 
     if (confirmCancel == true) {
-      await _firestore.collection('bookings').doc(bookingId).delete();
-      await _loadBookings();
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking canceled successfully.')));
+      try {
+        await _firestore.collection('bookings').doc(bookingId).delete();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Booking canceled successfully.')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error canceling booking: $e')),
+        );
+      }
     }
   }
 
@@ -95,100 +103,119 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
         ),
         centerTitle: true,
       ),
-      body: _bookings.isEmpty
-          ? const Center(child: Text('No bookings found.'))
-          : ListView.builder(
-              itemCount: _bookings.length,
-              itemBuilder: (context, index) {
-                final booking = _bookings[index];
-                return Card(
-                  margin: const EdgeInsets.all(16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 8,
-                  child: Container(
-                    decoration: BoxDecoration(
+      body: _bookingsStream == null
+          ? const Center(child: Text('Please sign in to view bookings.'))
+          : StreamBuilder<List<Map<String, dynamic>>>(
+              stream: _bookingsStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final bookings = snapshot.data ?? [];
+
+                if (bookings.isEmpty) {
+                  return const Center(child: Text('No bookings found.'));
+                }
+
+                return ListView.builder(
+                  itemCount: bookings.length,
+                  itemBuilder: (context, index) {
+                    final booking = bookings[index];
+                    return Card(
+                      margin: const EdgeInsets.all(16),
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
-                        gradient: AppGradients.primaryGradient),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          booking['location'] ?? 'Unknown Location',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                      ),
+                      elevation: 8,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          gradient: AppGradients.primaryGradient,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Date: ${booking['date'] ?? 'N/A'}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        Text(
-                          'Time: ${booking['time'] ?? 'N/A'}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'People: ${booking['people'] ?? 'N/A'}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              margin: const EdgeInsets.only(
-                                  right: 8), // Add space between buttons
-                              child: ElevatedButton(
-                                onPressed: () =>
-                                    _editBooking(booking['bookingId'] ?? ''),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue, // Button color
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10), // Padding for buttons
-                                ),
-                                child: const Text('Edit',
-                                    style: TextStyle(color: Colors.white)),
+                            Text(
+                              booking['location'] ?? 'Unknown Location',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
-                            ElevatedButton(
-                              onPressed: () =>
-                                  _cancelBooking(booking['bookingId'] ?? ''),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red, // Button color
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 10), // Padding for buttons
+                            const SizedBox(height: 8),
+                            Text(
+                              'Date: ${booking['date'] ?? 'N/A'}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
                               ),
-                              child: const Text('Cancel',
-                                  style: TextStyle(color: Colors.white)),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Time: ${booking['time'] ?? 'N/A'}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'People: ${booking['numberOfPeople'] ?? 'N/A'}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      _editBooking(booking['bookingId'] ?? ''),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 10,
+                                    ),
+                                  ),
+                                  child: const Text('Edit',
+                                      style: TextStyle(color: Colors.white)),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => _cancelBooking(
+                                      booking['bookingId'] ?? ''),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 10,
+                                    ),
+                                  ),
+                                  child: const Text('Cancel',
+                                      style: TextStyle(color: Colors.white)),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 );
               },
             ),

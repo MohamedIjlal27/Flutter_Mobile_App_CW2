@@ -235,7 +235,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
         'location': widget.location.name,
         'date': _selectedDate.toIso8601String(),
         'time': _selectedTime.format(context),
-        'people': _peopleController.text,
+        'numberOfPeople': int.parse(_peopleController.text),
         'userId': user.uid,
         'status': 'pending',
       };

@@ -233,7 +233,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
       print('User is logged in, proceeding with booking...'); // Debugging line
       final bookingData = {
         'location': widget.location.name,
-        'date': _selectedDate.toIso8601String(),
+        'date': Timestamp.fromDate(_selectedDate),
         'time': _selectedTime.format(context),
         'people': _peopleController.text,
         'userId': user.uid,

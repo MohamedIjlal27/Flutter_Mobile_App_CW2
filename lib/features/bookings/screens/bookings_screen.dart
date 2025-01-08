@@ -3,6 +3,7 @@ import 'package:e_travel/features/bookings/screens/edit_booking_screen.dart';
 import 'package:e_travel/core/config/theme/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class BookingsListScreen extends StatefulWidget {
   @override
@@ -82,6 +83,14 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
     }
   }
 
+  String _formatDate(dynamic date) {
+    if (date == null) return 'N/A';
+    if (date is Timestamp) {
+      return DateFormat('MMM dd, yyyy').format(date.toDate());
+    }
+    return 'N/A';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,7 +134,7 @@ class _BookingsListScreenState extends State<BookingsListScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Date: ${booking['date'] ?? 'N/A'}',
+                          'Date: ${_formatDate(booking['date'])}',
                           style: const TextStyle(
                             fontSize: 16,
                             color: Colors.white70,

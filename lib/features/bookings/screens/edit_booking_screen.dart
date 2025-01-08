@@ -28,11 +28,18 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
         await _firestore.collection('bookings').doc(widget.bookingId).get();
     if (bookingSnapshot.exists) {
       final data = bookingSnapshot.data()!;
-      _peopleController.text =
-          data['people'] ?? '0'; // Default value is '0' if null
-      _selectedDate = DateTime.tryParse(data['date']) ??
-          DateTime.now(); // Default to now if null
-      // Assuming 'time' is stored as a string in the format 'HH:mm'
+      _peopleController.text = data['people']?.toString() ?? '0';
+
+      // Fix date parsing
+      if (data['date'] != null) {
+        if (data['date'] is Timestamp) {
+          _selectedDate = (data['date'] as Timestamp).toDate();
+        } else if (data['date'] is String) {
+          _selectedDate = DateTime.parse(data['date']);
+        }
+      }
+
+      // Parse time
       final timeString = data['time'] ?? '12:00';
       final parts = timeString.split(':');
       if (parts.length == 2) {
@@ -40,12 +47,14 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
             hour: int.tryParse(parts[0]) ?? 12,
             minute: int.tryParse(parts[1]) ?? 0);
       }
+
+      setState(() {}); // Refresh UI with loaded data
     }
   }
 
   Future<void> _updateBooking() async {
     await _firestore.collection('bookings').doc(widget.bookingId).update({
-      'date': _selectedDate.toIso8601String(),
+      'date': Timestamp.fromDate(_selectedDate),
       'time': _selectedTime.format(context),
       'people': _peopleController.text,
     });

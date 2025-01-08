@@ -1,4 +1,5 @@
 import 'package:e_travel/core/config/theme/colors.dart';
+import 'package:e_travel/features/reviews/repositories/review_repository.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,18 +11,19 @@ class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ReviewRepository _reviewRepository = ReviewRepository();
   late User? _user;
   String? _name;
   String? _email;
   String? _profileImageUrl;
-  File? _imageFile; // To hold the selected image
+  File? _imageFile;
+  bool _isUploading = false;
 
   final _nameController = TextEditingController();
 
@@ -39,34 +41,92 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _name = userDoc['name'];
         _email = userDoc['email'];
-        _profileImageUrl =
-            userDoc['profileImage'] ?? ''; // Or set to a default image
+        _profileImageUrl = userDoc['profileImage'] ?? '';
         _nameController.text = _name!;
       });
     }
   }
 
   Future<void> _updateName() async {
-    await _firestore
-        .collection('users')
-        .doc(_user!.uid)
-        .update({'name': _nameController.text});
-    setState(() {
-      _name = _nameController.text; // Update state to reflect changes
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Name updated successfully')));
+    try {
+      final userData = {
+        'name': _nameController.text,
+        'profileImage': _profileImageUrl,
+      };
+
+      // Update user's name in users collection
+      await _firestore
+          .collection('users')
+          .doc(_user!.uid)
+          .update({'name': _nameController.text});
+
+      // Update all reviews by this user
+      await _reviewRepository.updateUserReviews(_user!.uid, userData);
+
+      setState(() {
+        _name = _nameController.text;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile updated successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        String errorMessage = 'Error updating profile';
+        if (e.toString().contains('Index creation required')) {
+          errorMessage =
+              'Please wait a few minutes while we set up the database and try again';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _changeProfileImage() async {
+    final ImageSource? source = await showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Image Source'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickImage(
+      source: source,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 75,
+    );
 
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
+        _isUploading = true;
       });
-      print('Picked image file path: ${pickedFile.path}');
 
       try {
         final storageRef = FirebaseStorage.instance
@@ -74,44 +134,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .child('profile_images')
             .child('${_user!.uid}.jpg');
 
-        // Start the upload
         final uploadTask = storageRef.putFile(_imageFile!);
+
         uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-          // See progress if needed
-          print(
-              'Upload progress: ${snapshot.bytesTransferred} / ${snapshot.totalBytes}');
+          final progress = snapshot.bytesTransferred / snapshot.totalBytes;
+          print('Upload progress: ${(progress * 100).toStringAsFixed(2)}%');
         });
 
         final snapshot = await uploadTask;
+        final downloadUrl = await snapshot.ref.getDownloadURL();
 
-        if (snapshot.state == TaskState.success) {
-          // Image uploaded successfully
-          final downloadUrl = await snapshot.ref.getDownloadURL();
-          print('Uploaded image URL: $downloadUrl');
+        final userData = {
+          'name': _name,
+          'profileImage': downloadUrl,
+        };
 
-          await _firestore
+        // Update Firestore user profile and all reviews
+        await Future.wait([
+          _firestore
               .collection('users')
               .doc(_user!.uid)
-              .update({'profileImage': downloadUrl});
+              .update({'profileImage': downloadUrl}),
+          _user!.updatePhotoURL(downloadUrl),
+          _reviewRepository.updateUserReviews(_user!.uid, userData),
+        ]);
 
-          setState(() {
-            _profileImageUrl = downloadUrl;
-          });
+        setState(() {
+          _profileImageUrl = downloadUrl;
+          _isUploading = false;
+        });
 
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Profile image updated successfully')),
           );
-        } else {
-          print('Upload task failed with state: ${snapshot.state}');
         }
       } catch (e) {
-        print('Error uploading image: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error uploading image: $e')),
-        );
+        setState(() => _isUploading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating profile image: $e')),
+          );
+        }
       }
-    } else {
-      print('No image selected');
     }
   }
 
@@ -140,18 +205,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  GestureDetector(
-                    onTap: _changeProfileImage,
-                    child: CircleAvatar(
-                      radius: 60,
-                      backgroundImage: _imageFile != null
-                          ? FileImage(_imageFile!)
-                          : _profileImageUrl != null &&
-                                  _profileImageUrl!.isNotEmpty
-                              ? NetworkImage(_profileImageUrl!)
-                              : const NetworkImage(
-                                  'https://img.freepik.com/free-photo/young-male-posing-isolated-against-blank-studio-wall_273609-12356.jpg'),
-                    ),
+                  Stack(
+                    children: [
+                      GestureDetector(
+                        onTap: _isUploading ? null : _changeProfileImage,
+                        child: CircleAvatar(
+                          radius: 60,
+                          backgroundImage: _imageFile != null
+                              ? FileImage(_imageFile!)
+                              : _profileImageUrl != null &&
+                                      _profileImageUrl!.isNotEmpty
+                                  ? NetworkImage(_profileImageUrl!)
+                                      as ImageProvider
+                                  : const NetworkImage(''),
+                        ),
+                      ),
+                      if (_isUploading)
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black38,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                  color: Colors.white),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   Text(

@@ -1,69 +1,48 @@
-import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Review extends Equatable {
+class Review {
   final String id;
+  final String locationName;
   final String userId;
   final String userName;
-  final String locationId;
-  final double rating;
+  final String? userProfileImage;
   final String comment;
-  final DateTime timestamp;
-  final List<String> photoUrls;
-  final String? userImage;
+  final double rating;
+  final DateTime createdAt;
 
-  const Review({
+  Review({
     required this.id,
+    required this.locationName,
     required this.userId,
     required this.userName,
-    required this.locationId,
-    required this.rating,
+    this.userProfileImage,
     required this.comment,
-    required this.timestamp,
-    this.photoUrls = const [],
-    this.userImage,
+    required this.rating,
+    required this.createdAt,
   });
 
-  factory Review.fromMap(Map<String, dynamic> map) {
+  factory Review.fromMap(Map<String, dynamic> map, String id) {
     return Review(
-      id: map['id'] as String,
-      userId: map['userId'] as String,
-      userName: map['userName'] as String,
-      locationId: map['locationId'] as String,
+      id: id,
+      locationName: map['locationName'] ?? '',
+      userId: map['userId'] ?? '',
+      userName: map['userName'] ?? '',
+      userProfileImage: map['userProfileImage'],
+      comment: map['comment'] ?? '',
       rating: (map['rating'] as num).toDouble(),
-      comment: map['comment'] as String,
-      timestamp: map['timestamp'] is String
-          ? DateTime.parse(map['timestamp'])
-          : (map['timestamp'] as Timestamp).toDate(),
-      photoUrls: List<String>.from(map['photoUrls'] ?? []),
-      userImage: map['userImage'] as String?,
+      createdAt: (map['createdAt'] as Timestamp).toDate(),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'locationName': locationName,
       'userId': userId,
       'userName': userName,
-      'locationId': locationId,
-      'rating': rating,
+      'userProfileImage': userProfileImage,
       'comment': comment,
-      'timestamp': timestamp,
-      'photoUrls': photoUrls,
-      'userImage': userImage,
+      'rating': rating,
+      'createdAt': Timestamp.fromDate(createdAt),
     };
   }
-
-  @override
-  List<Object> get props => [
-        id,
-        userId,
-        userName,
-        locationId,
-        rating,
-        comment,
-        timestamp,
-        photoUrls,
-        if (userImage != null) userImage!,
-      ];
 }

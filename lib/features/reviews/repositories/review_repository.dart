@@ -1,196 +1,135 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:e_travel/features/reviews/models/review_model.dart';
-import 'package:uuid/uuid.dart';
+import '../models/review_model.dart';
 
 class ReviewRepository {
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  ReviewRepository({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
-
-  Future<List<Review>> getLocationReviews(String locationId) async {
+  // Add a review
+  Future<void> addReview(Review review) async {
     try {
-      final snapshot = await _firestore
+      final locationRef =
+          _firestore.collection('locations').doc(review.locationName);
+
+      // First verify if location exists
+      final docSnapshot = await locationRef.get();
+      if (!docSnapshot.exists) {
+        throw Exception('Location does not exist');
+      }
+
+      // Get latest user data
+      final userDoc =
+          await _firestore.collection('users').doc(review.userId).get();
+      if (!userDoc.exists) {
+        throw Exception('User profile not found');
+      }
+
+      final userData = userDoc.data()!;
+
+      // Add the review with latest user data
+      await locationRef.collection('reviews').add({
+        ...review.toMap(),
+        'userName': userData['name'] ?? 'Anonymous',
+        'userProfileImage': userData['profileImage'],
+      });
+
+      // Update average rating
+      await _updateLocationRating(review.locationName);
+    } catch (e) {
+      print('Error adding review: $e');
+      throw Exception('Failed to add review: $e');
+    }
+  }
+
+  // Get real-time stream of reviews for a location
+  Stream<List<Review>> getLocationReviews(String locationName) {
+    return _firestore
+        .collection('locations')
+        .doc(locationName)
+        .collection('reviews')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => Review.fromMap(doc.data(), doc.id))
+          .toList();
+    });
+  }
+
+  // Update location's average rating
+  Future<void> _updateLocationRating(String locationName) async {
+    try {
+      final reviewsSnapshot = await _firestore
           .collection('locations')
-          .doc(locationId)
+          .doc(locationName)
           .collection('reviews')
-          .orderBy('timestamp', descending: true)
           .get();
 
-      return snapshot.docs
-          .map((doc) => Review.fromMap({...doc.data(), 'id': doc.id}))
-          .toList();
+      if (reviewsSnapshot.docs.isNotEmpty) {
+        double totalRating = 0;
+        for (var doc in reviewsSnapshot.docs) {
+          totalRating += (doc.data()['rating'] as num).toDouble();
+        }
+        double averageRating = totalRating / reviewsSnapshot.docs.length;
+
+        await _firestore
+            .collection('locations')
+            .doc(locationName)
+            .update({'rating': averageRating});
+      }
     } catch (e) {
-      throw Exception('Failed to load reviews: ${e.toString()}');
+      print('Error updating location rating: $e');
     }
   }
 
-  Future<Review> addReview({
-    required String locationId,
-    required String comment,
-    required double rating,
-    List<String> photoUrls = const [],
-  }) async {
+  // Delete a review
+  Future<void> deleteReview(String locationName, String reviewId) async {
     try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not authenticated');
-
-      final userDoc = await _firestore.collection('users').doc(user.uid).get();
-      final userData = userDoc.data() as Map<String, dynamic>;
-
-      final reviewId = const Uuid().v4();
-      final review = Review(
-        id: reviewId,
-        locationId: locationId,
-        userId: user.uid,
-        userName: userData['name'] ?? user.displayName ?? 'Anonymous',
-        userImage: userData['profileImage'],
-        comment: comment,
-        rating: rating,
-        timestamp: DateTime.now(),
-        photoUrls: photoUrls,
-      );
-
-      // Store the review
-      await _firestore.collection('reviews').doc(reviewId).set(review.toMap());
-
-      // Add to location's reviews subcollection
       await _firestore
           .collection('locations')
-          .doc(locationId)
-          .collection('reviews')
-          .doc(reviewId)
-          .set(review.toMap());
-
-      // Update location's average rating
-      await _updateLocationRating(locationId, rating);
-
-      return review;
-    } catch (e) {
-      throw Exception('Failed to add review: ${e.toString()}');
-    }
-  }
-
-  Future<void> updateReview({
-    required String reviewId,
-    required String locationId,
-    String? comment,
-    double? rating,
-    List<String>? photoUrls,
-  }) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not authenticated');
-
-      final reviewDoc =
-          await _firestore.collection('reviews').doc(reviewId).get();
-      if (!reviewDoc.exists) throw Exception('Review not found');
-
-      final reviewData = reviewDoc.data()!;
-      if (reviewData['userId'] != user.uid) {
-        throw Exception('Not authorized to update this review');
-      }
-
-      final updates = <String, dynamic>{};
-      if (comment != null) updates['comment'] = comment;
-      if (rating != null) updates['rating'] = rating;
-      if (photoUrls != null) updates['photoUrls'] = photoUrls;
-
-      await _firestore.collection('reviews').doc(reviewId).update(updates);
-      await _firestore
-          .collection('locations')
-          .doc(locationId)
-          .collection('reviews')
-          .doc(reviewId)
-          .update(updates);
-
-      if (rating != null) {
-        await _updateLocationRating(locationId, rating);
-      }
-    } catch (e) {
-      throw Exception('Failed to update review: ${e.toString()}');
-    }
-  }
-
-  Future<void> deleteReview(String reviewId, String locationId) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not authenticated');
-
-      final reviewDoc =
-          await _firestore.collection('reviews').doc(reviewId).get();
-      if (!reviewDoc.exists) throw Exception('Review not found');
-
-      final reviewData = reviewDoc.data()!;
-      if (reviewData['userId'] != user.uid) {
-        throw Exception('Not authorized to delete this review');
-      }
-
-      await _firestore.collection('reviews').doc(reviewId).delete();
-      await _firestore
-          .collection('locations')
-          .doc(locationId)
+          .doc(locationName)
           .collection('reviews')
           .doc(reviewId)
           .delete();
 
-      await _updateLocationRating(locationId, null);
+      // Update the average rating after deletion
+      await _updateLocationRating(locationName);
     } catch (e) {
-      throw Exception('Failed to delete review: ${e.toString()}');
+      print('Error deleting review: $e');
+      throw Exception('Failed to delete review: $e');
     }
   }
 
-  Future<double> getLocationAverageRating(String locationId) async {
+  // Update user's reviews when profile changes
+  Future<void> updateUserReviews(
+      String userId, Map<String, dynamic> userData) async {
     try {
-      final snapshot = await _firestore
-          .collection('locations')
-          .doc(locationId)
-          .collection('reviews')
-          .get();
+      // First get all locations
+      final locationsSnapshot = await _firestore.collection('locations').get();
 
-      if (snapshot.docs.isEmpty) return 0.0;
+      // Use batch write for better performance
+      final batch = _firestore.batch();
 
-      final totalRating = snapshot.docs
-          .fold<double>(0.0, (sum, doc) => sum + (doc.data()['rating'] ?? 0.0));
-
-      return totalRating / snapshot.docs.length;
-    } catch (e) {
-      throw Exception('Failed to get average rating: ${e.toString()}');
-    }
-  }
-
-  Future<void> _updateLocationRating(
-      String locationId, double? newRating) async {
-    try {
-      await _firestore.runTransaction((transaction) async {
-        final locationRef = _firestore.collection('locations').doc(locationId);
-        final reviews = await _firestore
-            .collection('locations')
-            .doc(locationId)
+      // For each location, check for reviews by this user
+      for (var locationDoc in locationsSnapshot.docs) {
+        final reviewsSnapshot = await locationDoc.reference
             .collection('reviews')
+            .where('userId', isEqualTo: userId)
             .get();
 
-        double totalRating = 0;
-        for (var doc in reviews.docs) {
-          totalRating += doc.data()['rating'] ?? 0.0;
+        // Update each review found
+        for (var reviewDoc in reviewsSnapshot.docs) {
+          batch.update(reviewDoc.reference, {
+            'userName': userData['name'] ?? 'Anonymous',
+            'userProfileImage': userData['profileImage'],
+          });
         }
+      }
 
-        final newAvgRating =
-            reviews.docs.isEmpty ? 0.0 : totalRating / reviews.docs.length;
-
-        transaction.update(locationRef, {
-          'rating': newAvgRating,
-          'numReviews': reviews.docs.length,
-          'lastReviewAt': DateTime.now().toIso8601String(),
-        });
-      });
+      // Commit all updates
+      await batch.commit();
     } catch (e) {
-      throw Exception('Failed to update location rating: ${e.toString()}');
+      print('Error updating user reviews: $e');
+      throw Exception('Failed to update user reviews: $e');
     }
   }
 }

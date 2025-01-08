@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:e_travel/features/reviews/bloc/review_bloc.dart';
-import 'package:e_travel/features/reviews/bloc/review_state.dart';
 
 class RatingSummary extends StatelessWidget {
   final String locationId;
@@ -20,7 +19,14 @@ class RatingSummary extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state is RatingLoaded) {
+        if (state is ReviewLoaded) {
+          double averageRating = 0;
+          if (state.reviews.isNotEmpty) {
+            averageRating =
+                state.reviews.fold(0.0, (sum, review) => sum + review.rating) /
+                    state.reviews.length;
+          }
+
           return Card(
             elevation: 2,
             child: Padding(
@@ -31,7 +37,7 @@ class RatingSummary extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        state.rating.toStringAsFixed(1),
+                        averageRating.toStringAsFixed(1),
                         style: const TextStyle(
                           fontSize: 48,
                           fontWeight: FontWeight.bold,
@@ -42,7 +48,7 @@ class RatingSummary extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           RatingBarIndicator(
-                            rating: state.rating,
+                            rating: averageRating,
                             itemBuilder: (context, _) => const Icon(
                               Icons.star,
                               color: Colors.amber,
@@ -52,7 +58,7 @@ class RatingSummary extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${state.numReviews} ${state.numReviews == 1 ? 'Review' : 'Reviews'}',
+                            '${state.reviews.length} ${state.reviews.length == 1 ? 'Review' : 'Reviews'}',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],

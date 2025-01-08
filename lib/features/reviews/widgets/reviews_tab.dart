@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:e_travel/features/reviews/bloc/review_bloc.dart';
-import 'package:e_travel/features/reviews/bloc/review_event.dart';
 import 'package:e_travel/features/reviews/widgets/review_list.dart';
 import 'package:e_travel/features/reviews/widgets/add_review_sheet.dart';
 
@@ -21,7 +20,7 @@ class _ReviewsTabState extends State<ReviewsTab> {
   @override
   void initState() {
     super.initState();
-    context.read<ReviewBloc>()..add(LoadLocationReviews(widget.locationId));
+    context.read<ReviewBloc>().add(LoadReviews(widget.locationId));
   }
 
   void _showAddReviewSheet() {

@@ -1,13 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:e_travel/features/reviews/bloc/review_bloc.dart';
+import 'package:e_travel/features/reviews/repositories/review_repository.dart';
 import 'package:e_travel/features/bookings/screens/booking_sheet.dart';
 import 'package:e_travel/features/locations/models/location_model.dart';
 import 'package:e_travel/features/reviews/widgets/reviews_tab.dart';
 import 'package:e_travel/core/config/theme/colors.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:e_travel/features/details/widgets/details_tab.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:e_travel/features/reviews/bloc/review_bloc.dart';
 
 class DetailScreen extends StatefulWidget {
   final Location location;
@@ -85,7 +86,9 @@ class _DetailScreenState extends State<DetailScreen>
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ReviewBloc(),
+      create: (context) => ReviewBloc(
+        reviewRepository: ReviewRepository(),
+      ),
       child: Scaffold(
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(130),

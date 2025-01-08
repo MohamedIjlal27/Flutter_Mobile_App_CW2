@@ -12,38 +12,54 @@ import 'package:get/get.dart';
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({Key? key}) : super(key: key);
 
-  Future<String> fetchProfileImage(String userId) async {
+  Future<Map<String, dynamic>> fetchUserData(String userId) async {
     final userDoc =
         await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    return userDoc.data()?['profileImage'] ?? '';
+    final data = userDoc.data() ?? {};
+    return {
+      'name': data['name'] ?? 'User Name',
+      'email': data['email'] ?? 'user@example.com',
+      'profileImage': data['profileImage'] ?? '',
+    };
   }
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    return FutureBuilder<String>(
-      future: user != null ? fetchProfileImage(user.uid) : Future.value(''),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: user != null
+          ? fetchUserData(user.uid)
+          : Future.value({
+              'name': 'User Name',
+              'email': 'user@example.com',
+              'profileImage': '',
+            }),
       builder: (context, snapshot) {
+        String name = 'User Name';
+        String email = 'user@example.com';
         String profileImageUrl = '';
 
         if (snapshot.hasData) {
-          profileImageUrl = snapshot.data!;
+          name = snapshot.data!['name'];
+          email = snapshot.data!['email'];
+          profileImageUrl = snapshot.data!['profileImage'];
         }
 
         return Drawer(
           child: ListView(
             children: <Widget>[
-              // Drawer Header with user profile
               UserAccountsDrawerHeader(
-                accountName: Text(user?.displayName ?? 'User Name'),
-                accountEmail: Text(user?.email ?? 'user@example.com'),
+                accountName: Text(name),
+                accountEmail: Text(email),
                 currentAccountPicture: CircleAvatar(
+                  backgroundColor: Colors.grey[200],
                   backgroundImage: profileImageUrl.isNotEmpty
                       ? NetworkImage(profileImageUrl)
-                      : const NetworkImage(
-                          'https://img.freepik.com/free-photo/young-male-posing-isolated-against-blank-studio-wall_273609-12356.jpg',
-                        ),
+                      : null,
+                  child: profileImageUrl.isEmpty
+                      ? Icon(Icons.person, color: Colors.grey[400], size: 35)
+                      : null,
                 ),
                 decoration: const BoxDecoration(
                   gradient: AppGradients.primaryGradient,

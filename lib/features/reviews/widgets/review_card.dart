@@ -31,22 +31,19 @@ class ReviewCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: Colors.grey[200],
-                  child: review.userImage != null
-                      ? ClipOval(
-                          child: Image.network(
-                            review.userImage!,
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Text(
-                                review.userName.isNotEmpty
-                                    ? review.userName[0].toUpperCase()
-                                    : '?'),
-                          ),
+                  backgroundImage: review.userProfileImage != null &&
+                          review.userProfileImage!.isNotEmpty
+                      ? NetworkImage(review.userProfileImage!)
+                      : null,
+                  child: review.userProfileImage == null ||
+                          review.userProfileImage!.isEmpty
+                      ? Text(
+                          review.userName.isNotEmpty
+                              ? review.userName[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(color: Colors.grey),
                         )
-                      : Text(review.userName.isNotEmpty
-                          ? review.userName[0].toUpperCase()
-                          : '?'),
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -61,7 +58,7 @@ class ReviewCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        timeago.format(review.timestamp),
+                        timeago.format(review.createdAt),
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 12,
@@ -97,30 +94,6 @@ class ReviewCard extends StatelessWidget {
               review.comment,
               style: const TextStyle(fontSize: 14),
             ),
-            if (review.photoUrls.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 100,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: review.photoUrls.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          review.photoUrls[index],
-                          height: 100,
-                          width: 100,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
           ],
         ),
       ),

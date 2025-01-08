@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:e_travel/features/reviews/bloc/review_bloc.dart';
-import 'package:e_travel/features/reviews/bloc/review_event.dart';
+import 'package:e_travel/features/reviews/models/review_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddReviewSheet extends StatefulWidget {
   final String locationId;
@@ -19,7 +21,6 @@ class AddReviewSheet extends StatefulWidget {
 class _AddReviewSheetState extends State<AddReviewSheet> {
   final _commentController = TextEditingController();
   double _rating = 0;
-  final List<String> _photoUrls = [];
 
   @override
   void dispose() {
@@ -27,7 +28,7 @@ class _AddReviewSheetState extends State<AddReviewSheet> {
     super.dispose();
   }
 
-  void _submitReview() {
+  void _submitReview() async {
     if (_rating == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please add a rating')),
@@ -42,16 +43,50 @@ class _AddReviewSheetState extends State<AddReviewSheet> {
       return;
     }
 
-    context.read<ReviewBloc>().add(
-          AddReview(
-            locationId: widget.locationId,
-            comment: _commentController.text.trim(),
-            rating: _rating,
-            photoUrls: _photoUrls,
-          ),
-        );
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to add a review')),
+      );
+      return;
+    }
 
-    Navigator.pop(context);
+    try {
+      // Get latest user data from Firestore
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User profile not found')),
+        );
+        return;
+      }
+
+      final userData = userDoc.data()!;
+      final userName = userData['name'] ?? 'Anonymous';
+      final userProfileImage = userData['profileImage'] as String?;
+
+      final review = Review(
+        id: '', // Will be set by Firestore
+        locationName: widget.locationId,
+        userId: user.uid,
+        userName: userName,
+        userProfileImage: userProfileImage,
+        comment: _commentController.text.trim(),
+        rating: _rating,
+        createdAt: DateTime.now(),
+      );
+
+      context.read<ReviewBloc>().add(AddNewReview(review));
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding review: $e')),
+      );
+    }
   }
 
   @override
@@ -104,21 +139,9 @@ class _AddReviewSheetState extends State<AddReviewSheet> {
             maxLines: 3,
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton.icon(
-                onPressed: () {
-                  // TODO: Implement photo upload
-                },
-                icon: const Icon(Icons.photo_camera),
-                label: const Text('Add Photos'),
-              ),
-              ElevatedButton(
-                onPressed: _submitReview,
-                child: const Text('Submit Review'),
-              ),
-            ],
+          ElevatedButton(
+            onPressed: _submitReview,
+            child: const Text('Submit Review'),
           ),
           const SizedBox(height: 16),
         ],

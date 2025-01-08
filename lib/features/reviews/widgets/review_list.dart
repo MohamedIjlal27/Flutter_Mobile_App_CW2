@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:e_travel/features/reviews/bloc/review_bloc.dart';
-import 'package:e_travel/features/reviews/bloc/review_event.dart';
-import 'package:e_travel/features/reviews/bloc/review_state.dart';
 import 'package:e_travel/features/reviews/models/review_model.dart';
 import 'package:e_travel/features/reviews/widgets/review_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,7 +31,7 @@ class ReviewList extends StatelessWidget {
           );
         }
 
-        if (state is ReviewsLoaded) {
+        if (state is ReviewLoaded) {
           if (state.reviews.isEmpty) {
             return const Center(
               child: Text(
@@ -83,14 +81,16 @@ class ReviewList extends StatelessWidget {
         child: _EditReviewDialog(
           review: review,
           onSubmit: (comment, rating) {
-            reviewBloc.add(
-              UpdateReview(
-                reviewId: review.id,
-                locationId: locationId,
-                comment: comment,
-                rating: rating,
-              ),
+            final updatedReview = Review(
+              id: review.id,
+              locationName: locationId,
+              userId: review.userId,
+              userName: review.userName,
+              comment: comment,
+              rating: rating,
+              createdAt: DateTime.now(),
             );
+            reviewBloc.add(AddNewReview(updatedReview));
             Navigator.pop(dialogContext);
           },
         ),
@@ -112,10 +112,7 @@ class ReviewList extends StatelessWidget {
           TextButton(
             onPressed: () {
               context.read<ReviewBloc>().add(
-                    DeleteReview(
-                      reviewId: review.id,
-                      locationId: locationId,
-                    ),
+                    DeleteExistingReview(locationId, review.id),
                   );
               Navigator.pop(context);
             },

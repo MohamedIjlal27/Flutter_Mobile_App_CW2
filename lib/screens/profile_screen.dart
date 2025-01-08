@@ -74,16 +74,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        String errorMessage = 'Error updating profile';
-        if (e.toString().contains('Index creation required')) {
-          errorMessage =
-              'Please wait a few minutes while we set up the database and try again';
-        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            duration: const Duration(seconds: 5),
-          ),
+          SnackBar(content: Text('Error updating profile: $e')),
         );
       }
     }

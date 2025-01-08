@@ -29,7 +29,7 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
     if (bookingSnapshot.exists) {
       final data = bookingSnapshot.data()!;
       _peopleController.text =
-          (data['numberOfPeople'] ?? 0).toString(); // Use numberOfPeople field
+          data['people'] ?? '0'; // Default value is '0' if null
       _selectedDate = DateTime.tryParse(data['date']) ??
           DateTime.now(); // Default to now if null
       // Assuming 'time' is stored as a string in the format 'HH:mm'
@@ -47,7 +47,7 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
     await _firestore.collection('bookings').doc(widget.bookingId).update({
       'date': _selectedDate.toIso8601String(),
       'time': _selectedTime.format(context),
-      'numberOfPeople': int.parse(_peopleController.text),
+      'people': _peopleController.text,
     });
 
     Navigator.pop(context);

@@ -103,29 +103,20 @@ class ReviewRepository {
   Future<void> updateUserReviews(
       String userId, Map<String, dynamic> userData) async {
     try {
-      // First get all locations
-      final locationsSnapshot = await _firestore.collection('locations').get();
+      // Get all reviews by this user across all locations
+      final reviewsQuery = await _firestore
+          .collectionGroup('reviews')
+          .where('userId', isEqualTo: userId)
+          .get();
 
       // Use batch write for better performance
       final batch = _firestore.batch();
-
-      // For each location, check for reviews by this user
-      for (var locationDoc in locationsSnapshot.docs) {
-        final reviewsSnapshot = await locationDoc.reference
-            .collection('reviews')
-            .where('userId', isEqualTo: userId)
-            .get();
-
-        // Update each review found
-        for (var reviewDoc in reviewsSnapshot.docs) {
-          batch.update(reviewDoc.reference, {
-            'userName': userData['name'] ?? 'Anonymous',
-            'userProfileImage': userData['profileImage'],
-          });
-        }
+      for (var doc in reviewsQuery.docs) {
+        batch.update(doc.reference, {
+          'userName': userData['name'] ?? 'Anonymous',
+          'userProfileImage': userData['profileImage'],
+        });
       }
-
-      // Commit all updates
       await batch.commit();
     } catch (e) {
       print('Error updating user reviews: $e');

@@ -8,24 +8,40 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:e_travel/core/services/offline_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Initialize offline service
+  final offlineService = OfflineService();
+
   runApp(
-    BlocProvider(
-      create: (context) => AuthBloc(
-        authRepository: AuthRepository(),
-      ),
-      child: const MyApp(),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AuthBloc(
+            authRepository: AuthRepository(),
+          ),
+        ),
+      ],
+      child: MyApp(offlineService: offlineService),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final OfflineService offlineService;
+
+  const MyApp({
+    super.key,
+    required this.offlineService,
+  });
 
   @override
   Widget build(BuildContext context) {
